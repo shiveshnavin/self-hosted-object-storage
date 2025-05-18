@@ -1,4 +1,3 @@
-
 {
   "name": "nextn",
   "version": "0.1.0",
@@ -45,8 +44,7 @@
     "firebase": "^11.7.3",
     "genkit": "^1.8.0",
     "lucide-react": "^0.475.0",
-    "multi-db-orm": "git+https://github.com/AjaySQA/multi-db-orm.git#v0.0.5",
-    "sqlite3": "^5.1.7",
+    "multi-db-orm": "^3.0.10",
     "next": "15.2.3",
     "patch-package": "^8.0.0",
     "path-browserify": "^1.0.1",
@@ -55,15 +53,16 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",
     "recharts": "^2.15.1",
+    "sqlite3": "^5.1.7",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/path-browserify": "^1.0.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/path-browserify": "^1.0.2",
     "@types/sqlite3": "^3.1.11",
     "genkit-cli": "^1.8.0",
     "postcss": "^8",
