@@ -1,8 +1,9 @@
+
 import path from 'path';
 
 export interface TokenData {
   pathPrefix: string; // Path relative to UPLOADS_DIR. Directory paths end with '/'.
-  expiry: number; // Timestamp
+  expiry: number; // Timestamp, or Number.MAX_SAFE_INTEGER for never expires
   token: string;
 }
 
@@ -12,7 +13,7 @@ const activeTokens = new Map<string, TokenData>();
 // Default token expiry: 24 hours
 const DEFAULT_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
-export function generateToken(rawPathPrefix: string, expiresInMs: number = DEFAULT_EXPIRY_MS): TokenData {
+export function generateToken(rawPathPrefix: string, expiresInMsParam?: number): TokenData {
   // Normalize pathPrefix: ensure it's relative and clean.
   // If it's meant to be a directory, ensure it ends with a slash.
   let normalizedPrefix = path.normalize(rawPathPrefix.startsWith('/') ? rawPathPrefix.substring(1) : rawPathPrefix);
@@ -26,11 +27,20 @@ export function generateToken(rawPathPrefix: string, expiresInMs: number = DEFAU
 
 
   const token = crypto.randomUUID();
-  const expiry = Date.now() + expiresInMs;
-  const tokenData: TokenData = { pathPrefix: normalizedPrefix, expiry, token };
+  let calculatedExpiry: number;
+
+  if (expiresInMsParam === 0) {
+    calculatedExpiry = Number.MAX_SAFE_INTEGER; // Never expire
+  } else if (expiresInMsParam !== undefined) {
+    calculatedExpiry = Date.now() + expiresInMsParam; // Use provided duration
+  } else {
+    calculatedExpiry = Date.now() + DEFAULT_EXPIRY_MS; // Use default
+  }
+  
+  const tokenData: TokenData = { pathPrefix: normalizedPrefix, expiry: calculatedExpiry, token };
   activeTokens.set(token, tokenData);
   
-  console.log(`Generated token: ${token} for prefix: ${normalizedPrefix}, expiry: ${new Date(expiry).toISOString()}`);
+  console.log(`Generated token: ${token} for prefix: ${normalizedPrefix}, expiry: ${calculatedExpiry === Number.MAX_SAFE_INTEGER ? 'Never Expires' : new Date(calculatedExpiry).toISOString()}`);
   return tokenData;
 }
 
@@ -42,7 +52,7 @@ export function validateToken(token: string, requestedRelativePath: string): Tok
     return null;
   }
 
-  if (Date.now() > tokenData.expiry) {
+  if (tokenData.expiry !== Number.MAX_SAFE_INTEGER && Date.now() > tokenData.expiry) {
     activeTokens.delete(token); // Clean up expired token
     console.log(`Token validation failed: token ${token} expired.`);
     return null;
@@ -79,7 +89,7 @@ export function revokeToken(token: string): void {
 setInterval(() => {
   const now = Date.now();
   for (const [token, tokenData] of activeTokens.entries()) {
-    if (now > tokenData.expiry) {
+    if (tokenData.expiry !== Number.MAX_SAFE_INTEGER && now > tokenData.expiry) {
       activeTokens.delete(token);
       console.log(`Cleaned up expired token: ${token}`);
     }

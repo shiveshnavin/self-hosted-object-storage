@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { FileSystemItem } from '@/lib/file-system';
@@ -21,7 +22,7 @@ import path from 'path-browserify'; // Using path-browserify for client-side pat
 interface GeneratedTokenInfo {
   accessToken: string;
   pathPrefix: string;
-  expiresAt: string;
+  expiresAt: string; // Can be ISO string or "Never Expires"
   accessUrlPreview: string;
 }
 
@@ -138,6 +139,7 @@ export default function FileBrowserClient() {
     const prefix = item ? item.path : currentPath;
     setTokenPathPrefix(prefix.endsWith('/') || prefix === '' || (item && item.type === 'folder') ? prefix : prefix + '/');
     setGeneratedTokenInfo(null);
+    setTokenExpiresInHours(24); // Reset to default when opening dialog
     setIsTokenDialogOpen(true);
   };
 
@@ -301,7 +303,7 @@ export default function FileBrowserClient() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Generate Pre-authenticated Token</DialogTitle>
-            <DialogDescription>Create a token for accessing files under a specific path prefix.</DialogDescription>
+            <DialogDescription>Create a token for accessing files under a specific path prefix. Use 0 hours for a non-expiring token.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1">
@@ -311,7 +313,8 @@ export default function FileBrowserClient() {
             </div>
             <div className="space-y-1">
               <Label htmlFor="tokenExpires">Expires In (hours)</Label>
-              <Input id="tokenExpires" type="number" value={tokenExpiresInHours} onChange={(e) => setTokenExpiresInHours(parseInt(e.target.value, 10) || 24)} min="1" />
+              <Input id="tokenExpires" type="number" value={tokenExpiresInHours} onChange={(e) => setTokenExpiresInHours(Number(e.target.value))} min="0" />
+               <p className="text-xs text-muted-foreground">Enter 0 for a token that never expires.</p>
             </div>
           </div>
           {generatedTokenInfo && (
@@ -336,7 +339,7 @@ export default function FileBrowserClient() {
                 </div>
                  <p className="text-xs text-muted-foreground">Append specific file names to this base URL to access them. E.g., .../{generatedTokenInfo.pathPrefix}<strong>yourfile.txt</strong></p>
               </div>
-              <p className="text-xs">Expires At: {new Date(generatedTokenInfo.expiresAt).toLocaleString()}</p>
+              <p className="text-xs">Expires At: {generatedTokenInfo.expiresAt === 'Never Expires' ? 'Never Expires' : new Date(generatedTokenInfo.expiresAt).toLocaleString()}</p>
             </div>
           )}
           <DialogFooter>
