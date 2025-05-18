@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // serverActions: true, // Not strictly needed for this feature, but good for future.
+    // Enabling it generally for Next.js 14+ patterns.
+    // For Next 15.2.3 (current version), bodySizeLimit is part of experimental for App Router.
+    // It might be useful if large file uploads are routed through server actions in the future.
+    // For now, our API routes will handle this directly.
+  },
 };
 
 export default nextConfig;
