@@ -7,7 +7,7 @@ import path from 'path';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { pathPrefix, expiresInHours } = body; // expiresInHours can be string, number, or undefined
+    const { pathPrefix, expiresInHours } = body; 
 
     if (typeof pathPrefix !== 'string') {
       return NextResponse.json({ message: 'pathPrefix is required and must be a string' }, { status: 400 });
@@ -16,15 +16,14 @@ export async function POST(request: NextRequest) {
     let finalExpiresInMs: number | undefined;
 
     if (expiresInHours !== undefined) {
-      const hoursNum = Number(expiresInHours); // Converts "0", 0, "24", 24 to respective numbers. "" becomes 0. "abc" becomes NaN.
+      const hoursNum = Number(expiresInHours); 
       if (isNaN(hoursNum) || hoursNum < 0) {
         return NextResponse.json({ message: 'expiresInHours must be a valid non-negative number' }, { status: 400 });
       }
-      finalExpiresInMs = hoursNum * 60 * 60 * 1000; // If hoursNum is 0, finalExpiresInMs will be 0.
+      finalExpiresInMs = hoursNum * 60 * 60 * 1000; 
     }
-    // If expiresInHours was not provided (is undefined), finalExpiresInMs remains undefined, and generateToken will use its default.
     
-    const tokenData = generateToken(pathPrefix, finalExpiresInMs);
+    const tokenData = await generateToken(pathPrefix, finalExpiresInMs); // generateToken is now async
     
     const fullAccessUrlPreview = `${request.nextUrl.origin}/api/files/${tokenData.token}/${tokenData.pathPrefix}`;
 
@@ -36,6 +35,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating token:', error);
+    // Check if the error is due to DB initialization failure
+    if (error instanceof Error && error.message.includes('Failed to initialize token database')) {
+        return NextResponse.json({ message: 'Server configuration error: Could not initialize token storage.' }, { status: 503 }); // Service Unavailable
+    }
     return NextResponse.json({ message: 'Error generating token' }, { status: 500 });
   }
 }

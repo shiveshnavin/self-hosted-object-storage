@@ -1,3 +1,4 @@
+
 {
   "name": "nextn",
   "version": "0.1.0",
@@ -44,6 +45,8 @@
     "firebase": "^11.7.3",
     "genkit": "^1.8.0",
     "lucide-react": "^0.475.0",
+    "multi-db-orm": "git+https://github.com/AjaySQA/multi-db-orm.git#v0.0.5",
+    "sqlite3": "^5.1.7",
     "next": "15.2.3",
     "patch-package": "^8.0.0",
     "path-browserify": "^1.0.1",
@@ -61,6 +64,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/path-browserify": "^1.0.2",
+    "@types/sqlite3": "^3.1.11",
     "genkit-cli": "^1.8.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",

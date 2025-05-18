@@ -1,4 +1,4 @@
-# **App Name**: FileHaven
+# **App Name**: SelfHostedObjectStorage
 
 ## Core Features:
 
