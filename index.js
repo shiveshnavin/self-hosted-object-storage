@@ -12,7 +12,7 @@ function findPrefix(token) {
   return entry && entry.prefix;
 }
 
-app.patch("/api/:token/{*any}", (req, res) => {
+app.put("/api/:token/{*any}", (req, res) => {
   const { token } = req.params;
   const prefix = findPrefix(token);
   if (!prefix) return res.status(403).send("Invalid token");
