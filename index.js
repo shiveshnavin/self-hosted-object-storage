@@ -61,4 +61,5 @@ app.delete("/api/:token/{*any}", (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(3000, () => console.log("objectstorage running on port 3000"));
+const PORT = process.env.PORT || 8000
+app.listen(PORT, () => console.log("objectstorage running on port ", PORT));
