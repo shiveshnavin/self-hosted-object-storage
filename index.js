@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
@@ -8,12 +7,6 @@ dotenv.config()
 
 const app = express();
 const STORAGE = path.join(__dirname, "storage");
-const TOKENS = JSON.parse(fs.readFileSync("./tokens.json"));
-
-function findPrefix(token) {
-  const entry = TOKENS.find((t) => t.token === token);
-  return entry && entry.prefix;
-}
 
 async function getTokenInfo(token) {
   try {
@@ -29,17 +22,16 @@ async function getTokenInfo(token) {
 
 
 app.put("/:token/{*any}", async (req, res) => {
-  const { token } = req.params;
+  // const { token } = req.params;
 
-  const tokenInfo = await getTokenInfo(token);
-  if (!tokenInfo || !tokenInfo.regex) {
-    return res.status(403).send('Forbidden: Invalid token');
-  }
-
+  // const tokenInfo = await getTokenInfo(token);
+  // if (!tokenInfo || !tokenInfo.regex) {
+  //   return res.status(403).send('Forbidden: Invalid token');
+  // }
 
   const relPath = req.params.any.join("/");
-  if (!(tokenInfo.regex.test(relPath)))
-    return res.status(403).send("Token not valid for this path");
+  // if (!(tokenInfo.regex.test(relPath)))
+  //   return res.status(403).send("Token not valid for this path");
 
   const dest = path.join(STORAGE, relPath);
   if (!fs.existsSync(path.dirname(dest)))
@@ -47,23 +39,26 @@ app.put("/:token/{*any}", async (req, res) => {
 
   const writeStream = fs.createWriteStream(dest);
   req.pipe(writeStream);
-  writeStream.on("finish", () => res.json({ success: true, path: relPath }));
+  writeStream.on("finish", () => {
+    console.log('uploaded', relPath)
+    res.json({ success: true, path: relPath })
+  });
   writeStream.on("error", (err) =>
     res.status(500).json({ error: err.message })
   );
 });
 
 app.delete("/:token/{*any}", async (req, res) => {
-  const { token } = req.params;
+  // const { token } = req.params;
 
-  const tokenInfo = await getTokenInfo(token);
-  if (!tokenInfo || !tokenInfo.regex) {
-    return res.status(403).send('Forbidden: Invalid token');
-  }
+  // const tokenInfo = await getTokenInfo(token);
+  // if (!tokenInfo || !tokenInfo.regex) {
+  //   return res.status(403).send('Forbidden: Invalid token');
+  // }
 
   const relPath = req.params.any.join("/");
-  if (!(tokenInfo.regex.test(relPath)))
-    return res.status(403).send("Token not valid for this path");
+  // if (!(tokenInfo.regex.test(relPath)))
+  //   return res.status(403).send("Token not valid for this path");
 
   const target = path.join(STORAGE, relPath);
   if (!fs.existsSync(target)) return res.status(404).send("Not found");
@@ -72,7 +67,7 @@ app.delete("/:token/{*any}", async (req, res) => {
 
   // cleanup empty dirs up to STORAGE/prefix
   let dir = path.dirname(target);
-  const stop = path.join(STORAGE, prefix);
+  const stop = path.join(STORAGE);
   while (
     dir.startsWith(stop) &&
     fs.existsSync(dir) &&
@@ -81,11 +76,11 @@ app.delete("/:token/{*any}", async (req, res) => {
     fs.rmdirSync(dir);
     dir = path.dirname(dir);
   }
+  console.log('deleted', relPath)
   res.json({ success: true });
 });
 
-
-app.all('/api/:token', async (req, res) => {
+app.use('/:token/{*any}', async (req, res, next) => {
   const token = req.params.token;
   const fullPath = '/' + req.params[0];
   if (!fullPath) {
@@ -97,10 +92,16 @@ app.all('/api/:token', async (req, res) => {
   }
 
   if (tokenInfo.regex.test(fullPath)) {
-    return res.status(200).send('OK');
+    next()
   } else {
     return res.status(403).send('Forbidden: Path not allowed');
   }
+})
+
+app.use((req, res) => {
+  res.send({
+    message: 'OK'
+  })
 })
 
 const PORT = process.env.PORT || 8000
