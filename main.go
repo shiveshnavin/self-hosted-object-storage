@@ -48,7 +48,7 @@ func authMiddleware(next http.Handler) http.Handler {
 		if uri == "" {
 			uri = r.URL.Path
 		}
-		fmt.Printf("[authMiddleware] Method: %s, URI: %s, X-Original-URI: %s, URL.Path: %s\n", r.Method, uri, r.Header.Get("X-Original-URI"), r.URL.Path)
+		// fmt.Printf("[authMiddleware] Method: %s, URI: %s, X-Original-URI: %s, URL.Path: %s\n", r.Method, uri, r.Header.Get("X-Original-URI"), r.URL.Path)
 
 		parts := strings.SplitN(strings.TrimPrefix(uri, "/"), "/", 2)
 		if len(parts) < 2 {
@@ -58,7 +58,7 @@ func authMiddleware(next http.Handler) http.Handler {
 		}
 		token := parts[0]
 		fullPath := "/" + parts[1]
-		fmt.Printf("[authMiddleware] Token: %s, FullPath: %s\n", token, fullPath)
+		// fmt.Printf("[authMiddleware] Token: %s, FullPath: %s\n", token, fullPath)
 
 		re, err := getTokenInfo(token)
 		if err != nil || re == nil {
@@ -73,7 +73,7 @@ func authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// fmt.Println("[authMiddleware] Auth OK", uri)
+		fmt.Println("[authMiddleware] Auth OK", fullPath)
 
 		// For PUT and DELETE, continue to the next handler
 		if r.Method == http.MethodPut || r.Method == http.MethodDelete {
