@@ -92,6 +92,7 @@ app.use('/:token/{*any}', async (req, res, next) => {
   }
 
   if (tokenInfo.regex.test(fullPath)) {
+    console.log('auth OK', req.url)
     next()
   } else {
     return res.status(403).send('Forbidden: Path not allowed');
