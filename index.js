@@ -2,6 +2,9 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv')
+dotenv.config()
 
 const app = express();
 const STORAGE = path.join(__dirname, "storage");
@@ -12,13 +15,30 @@ function findPrefix(token) {
   return entry && entry.prefix;
 }
 
-app.put("/api/:token/{*any}", (req, res) => {
+async function getTokenInfo(token) {
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET || 'aezakmi');
+    return {
+      regex: new RegExp(decoded.path),
+    };
+  } catch (err) {
+    console.error('Invalid token:', err.message);
+    return null;
+  }
+}
+
+
+app.put("/:token/{*any}", async (req, res) => {
   const { token } = req.params;
-  const prefix = findPrefix(token);
-  if (!prefix) return res.status(403).send("Invalid token");
+
+  const tokenInfo = await getTokenInfo(token);
+  if (!tokenInfo || !tokenInfo.regex) {
+    return res.status(403).send('Forbidden: Invalid token');
+  }
+
 
   const relPath = req.params.any.join("/");
-  if (!relPath.startsWith(prefix))
+  if (!(tokenInfo.regex.test(relPath)))
     return res.status(403).send("Token not valid for this path");
 
   const dest = path.join(STORAGE, relPath);
@@ -33,13 +53,16 @@ app.put("/api/:token/{*any}", (req, res) => {
   );
 });
 
-app.delete("/api/:token/{*any}", (req, res) => {
+app.delete("/:token/{*any}", async (req, res) => {
   const { token } = req.params;
-  const prefix = findPrefix(token);
-  if (!prefix) return res.status(403).send("Invalid token");
+
+  const tokenInfo = await getTokenInfo(token);
+  if (!tokenInfo || !tokenInfo.regex) {
+    return res.status(403).send('Forbidden: Invalid token');
+  }
 
   const relPath = req.params.any.join("/");
-  if (!relPath.startsWith(prefix))
+  if (!(tokenInfo.regex.test(relPath)))
     return res.status(403).send("Token not valid for this path");
 
   const target = path.join(STORAGE, relPath);
@@ -60,6 +83,25 @@ app.delete("/api/:token/{*any}", (req, res) => {
   }
   res.json({ success: true });
 });
+
+
+app.all('/api/:token', async (req, res) => {
+  const token = req.params.token;
+  const fullPath = '/' + req.params[0];
+  if (!fullPath) {
+    return res.send(401).send('Missing token')
+  }
+  const tokenInfo = await getTokenInfo(token);
+  if (!tokenInfo || !tokenInfo.regex) {
+    return res.status(403).send('Forbidden: Invalid token');
+  }
+
+  if (tokenInfo.regex.test(fullPath)) {
+    return res.status(200).send('OK');
+  } else {
+    return res.status(403).send('Forbidden: Path not allowed');
+  }
+})
 
 const PORT = process.env.PORT || 8000
 app.listen(PORT, () => console.log("objectstorage running on port ", PORT));
