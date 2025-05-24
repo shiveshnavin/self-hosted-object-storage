@@ -22,17 +22,7 @@ async function getTokenInfo(token) {
 
 
 app.put("/:token/{*any}", async (req, res) => {
-  // const { token } = req.params;
-
-  // const tokenInfo = await getTokenInfo(token);
-  // if (!tokenInfo || !tokenInfo.regex) {
-  //   return res.status(403).send('Forbidden: Invalid token');
-  // }
-
   const relPath = req.params.any.join("/");
-  // if (!(tokenInfo.regex.test(relPath)))
-  //   return res.status(403).send("Token not valid for this path");
-
   const dest = path.join(STORAGE, relPath);
   if (!fs.existsSync(path.dirname(dest)))
     fs.mkdirSync(path.dirname(dest), { recursive: true });
@@ -49,23 +39,12 @@ app.put("/:token/{*any}", async (req, res) => {
 });
 
 app.delete("/:token/{*any}", async (req, res) => {
-  // const { token } = req.params;
-
-  // const tokenInfo = await getTokenInfo(token);
-  // if (!tokenInfo || !tokenInfo.regex) {
-  //   return res.status(403).send('Forbidden: Invalid token');
-  // }
-
   const relPath = req.params.any.join("/");
-  // if (!(tokenInfo.regex.test(relPath)))
-  //   return res.status(403).send("Token not valid for this path");
-
   const target = path.join(STORAGE, relPath);
   if (!fs.existsSync(target)) return res.status(404).send("Not found");
 
   fs.unlinkSync(target);
 
-  // cleanup empty dirs up to STORAGE/prefix
   let dir = path.dirname(target);
   const stop = path.join(STORAGE);
   while (
