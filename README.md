@@ -9,3 +9,12 @@ A lightweight Node.js/Express server offering token‑based preauthenticated URL
  - File Upload/Replace API — PATCH API to upload/replace a file and automatically create the directory structure if it does not exist.
  - File Deletion API — DELETE API to delete files. If a folder becomes empty after deletion, automatically delete the folder as well.
  - Token Storage — Uses MultiDBORM to store access tokens.
+
+
+ ## Usage
+
+ Generate a jwt using
+
+ http://jwtbuilder.jamiekurtz.com/
+
+ make sure to specify a field `path` in the payload with the prefix of the path (relative to `./storage` dir)

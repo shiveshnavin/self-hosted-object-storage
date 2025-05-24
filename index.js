@@ -61,7 +61,10 @@ app.delete("/:token/{*any}", async (req, res) => {
 
 app.use('/:token/{*any}', async (req, res, next) => {
   const token = req.params.token;
-  const fullPath = '/' + req.params[0];
+  let fullPath = '/' + req.params[0];
+  if (Array.isArray(req.params.any)) {
+    fullPath = '/' + req.params.any.join("/");
+  }
   if (!fullPath) {
     return res.send(401).send('Missing token')
   }

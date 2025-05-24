@@ -44,29 +44,45 @@ func getTokenInfo(tokenStr string) (*regexp.Regexp, error) {
 // Auth middleware to check token and path regex
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Expect URL format: /{token}/path/to/file
-		parts := strings.SplitN(strings.TrimPrefix(r.URL.Path, "/"), "/", 2)
+		uri := r.Header.Get("X-Original-URI")
+		if uri == "" {
+			uri = r.URL.Path
+		}
+		fmt.Printf("[authMiddleware] Method: %s, URI: %s, X-Original-URI: %s, URL.Path: %s\n", r.Method, uri, r.Header.Get("X-Original-URI"), r.URL.Path)
+
+		parts := strings.SplitN(strings.TrimPrefix(uri, "/"), "/", 2)
 		if len(parts) < 2 {
+			fmt.Println("[authMiddleware] Missing token in URI:", uri)
 			http.Error(w, "Missing token", http.StatusUnauthorized)
 			return
 		}
 		token := parts[0]
 		fullPath := "/" + parts[1]
+		fmt.Printf("[authMiddleware] Token: %s, FullPath: %s\n", token, fullPath)
 
 		re, err := getTokenInfo(token)
 		if err != nil || re == nil {
+			fmt.Printf("[authMiddleware] Invalid token: %v\n", err)
 			http.Error(w, "Forbidden: Invalid token", http.StatusForbidden)
 			return
 		}
 
-		if re.MatchString(fullPath) {
-			fmt.Println("auth OK", r.URL.Path)
-			next.ServeHTTP(w, r)
-			return
-		} else {
+		if !re.MatchString(fullPath) {
+			fmt.Printf("[authMiddleware] Path not allowed: %s (regex: %s)\n", fullPath, re.String())
 			http.Error(w, "Forbidden: Path not allowed", http.StatusForbidden)
 			return
 		}
+
+		fmt.Println("[authMiddleware] Auth OK", uri)
+
+		// For PUT and DELETE, continue to the next handler
+		if r.Method == http.MethodPut || r.Method == http.MethodDelete {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// For GET and others, call defaultHandler directly
+		defaultHandler(w, r)
 	})
 }
 
@@ -123,6 +139,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Extract token and path: /{token}/path/to/file
 	parts := strings.SplitN(strings.TrimPrefix(r.URL.Path, "/"), "/", 2)
 	if len(parts) < 2 {
 		http.Error(w, "Invalid path", http.StatusBadRequest)
@@ -136,8 +153,8 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := os.Remove(target)
-	if err != nil {
+	// Delete the file
+	if err := os.Remove(target); err != nil {
 		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -145,8 +162,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	// Remove empty parent directories up to storage root
 	dir := filepath.Dir(target)
 	stop := filepath.Clean(StorageDir)
-
-	for strings.HasPrefix(dir, stop) {
+	for strings.HasPrefix(dir, stop) && dir != stop {
 		files, err := os.ReadDir(dir)
 		if err != nil || len(files) > 0 {
 			break
