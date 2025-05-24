@@ -13,6 +13,7 @@
     "multi-db-orm": "^3.0.10"
   },
   "scripts": {
+    "start": "node index.js",
     "test": "echo Skip test"
   },
   "repository": {
