@@ -73,7 +73,7 @@ func authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		fmt.Println("[authMiddleware] Auth OK", uri)
+		// fmt.Println("[authMiddleware] Auth OK", uri)
 
 		// For PUT and DELETE, continue to the next handler
 		if r.Method == http.MethodPut || r.Method == http.MethodDelete {

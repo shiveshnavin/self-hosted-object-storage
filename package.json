@@ -15,7 +15,9 @@
   "scripts": {
     "start": "node index.js",
     "start:go": "go run main.go",
-    "test": "echo Skip test"
+    "serve:go": "./objectstorage",
+    "test": "echo Skip test",
+    "build:go": "go build -o objectstorage main.go"
   },
   "repository": {
     "type": "git",
