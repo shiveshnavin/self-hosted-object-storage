@@ -62,7 +62,7 @@ func authMiddleware(next http.Handler) http.Handler {
 
 		re, err := getTokenInfo(token)
 		if err != nil || re == nil {
-			fmt.Printf("[authMiddleware] Invalid token: %v\n", err)
+			fmt.Printf("[authMiddleware] Invalid token: %s %v\n", fullPath, err)
 			http.Error(w, "Forbidden: Invalid token", http.StatusForbidden)
 			return
 		}
