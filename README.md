@@ -18,3 +18,5 @@ A lightweight Node.js/Express server offering token‑based preauthenticated URL
  http://jwtbuilder.jamiekurtz.com/
 
  make sure to specify a field `path` in the payload with the prefix of the path (relative to `./storage` dir)
+
+ For DIR index viewing with nginx make sure the url ends with `/`
