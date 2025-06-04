@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -177,9 +178,21 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Load .env file if present
+	_ = godotenv.Load()
+
 	// Override secret from env if available
 	if s := os.Getenv("SECRET"); s != "" {
 		Secret = []byte(s)
+	}
+
+	// Log the secret with ***
+	secretLen := len(Secret)
+	if secretLen > 0 {
+		masked := strings.Repeat("*", secretLen)
+		fmt.Printf("Loaded SECRET: %s (length: %d)\n", masked, secretLen)
+	} else {
+		fmt.Println("No SECRET loaded!")
 	}
 
 	mux := http.NewServeMux()
