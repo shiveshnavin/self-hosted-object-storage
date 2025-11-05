@@ -1,6 +1,18 @@
-# Self Hosted Object Storage
+<h1 align="center">Self Hosted Object Storage</h1>
 
-A lightweight Node.js/Express server offering token‑based preauthenticated URLs for hierarchical file upload (PATCH) and deletion (DELETE), with automatic directory creation and empty‑folder cleanup.
+<p align="center">
+  A lightweight Node.js/Express server offering token-based preauthenticated URLs 
+  for hierarchical file upload (PATCH) and deletion (DELETE), with automatic directory 
+  creation and empty-folder cleanup.
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/098a2299-322c-4c31-9f28-6109a9ab0660" 
+       alt="hld" width="512px">
+</p>
+
+<br>
+
 
 ## Features
  - Admin Console — Simple HTML-based admin console to list files, create pre-authenticated URLs, upload/replace files, and delete files/empty folders.
